@@ -1,0 +1,351 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#f7f8fc" />
+    <title>Chartcraft — Make a chart from your data</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+    <script
+      src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"
+      defer
+    ></script>
+    <script
+      src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"
+      defer
+    ></script>
+    <script src="script.js" defer></script>
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="#" aria-label="Chartcraft home">
+        <span class="brand-mark" aria-hidden="true"
+          ><span></span><span></span><span></span
+        ></span>
+        <span>chartcraft</span>
+      </a>
+      <div class="topbar-right">
+        <span class="saved-status"
+          ><span class="status-dot"></span> Runs in your browser</span
+        >
+        <a class="github-link" href="#how-it-works"
+          >How it works <span aria-hidden="true">↗</span></a
+        >
+      </div>
+    </header>
+
+    <main class="app-shell">
+      <section class="intro">
+        <div class="eyebrow">
+          <span class="eyebrow-line"></span> YOUR DATA, MADE CLEAR
+        </div>
+        <h1>Make your data <span>make sense.</span></h1>
+        <p>
+          Drop in a file or paste your data. Build a beautiful chart in seconds
+          — no spreadsheet skills needed.
+        </p>
+      </section>
+
+      <section class="workspace" aria-label="Chart generator">
+        <aside class="control-panel">
+          <div class="panel-heading">
+            <div>
+              <span class="step-label">STEP 01</span>
+              <h2>Your data</h2>
+            </div>
+            <button class="text-button" id="load-example" type="button">
+              Try an example <span aria-hidden="true">↗</span>
+            </button>
+          </div>
+
+          <label class="data-label" for="data-input"
+            >Paste or type your data</label
+          >
+          <div class="format-hint">CSV · JSON · TSV · JSON Lines</div>
+          <textarea
+            id="data-input"
+            spellcheck="false"
+            aria-describedby="data-help"
+            placeholder="Paste your data here, or upload a file..."
+          ></textarea>
+          <div class="data-meta">
+            <span id="data-help"
+              >Column headers are detected automatically.</span
+            >
+            <span id="row-count">0 rows</span>
+          </div>
+
+          <div class="upload-row">
+            <label for="file-input" class="upload-button">
+              <span class="upload-icon" aria-hidden="true">↑</span> Upload a
+              file
+            </label>
+            <input
+              id="file-input"
+              type="file"
+              accept=".csv,.tsv,.txt,.json,.jsonl,.ndjson,application/json,text/csv,text/tab-separated-values"
+            />
+            <span class="upload-hint">CSV or JSON, up to 10 MB</span>
+          </div>
+
+          <div class="section-divider"></div>
+
+          <div class="panel-heading chart-heading">
+            <div>
+              <span class="step-label">STEP 02</span>
+              <h2>Choose your chart</h2>
+            </div>
+          </div>
+
+          <label class="field-label" for="chart-type">Chart type</label>
+          <div class="select-wrap">
+            <select id="chart-type">
+              <option value="bar">Bar chart</option>
+              <option value="line">Line chart</option>
+              <option value="pie">Pie chart</option>
+              <option value="doughnut">Doughnut chart</option>
+              <option value="radar">Radar chart</option>
+              <option value="polarArea">Polar area</option>
+              <option value="scatter">Scatter plot</option>
+              <option value="bubble">Bubble chart</option>
+            </select>
+            <span class="select-chevron" aria-hidden="true">⌄</span>
+          </div>
+
+          <label class="field-label" for="label-column">Label / X-axis</label>
+          <div class="select-wrap">
+            <select id="label-column" disabled>
+              <option value="">Add data to choose a column</option>
+            </select>
+            <span class="select-chevron" aria-hidden="true">⌄</span>
+          </div>
+
+          <label class="field-label" for="value-column">Value / Y-axis</label>
+          <div class="select-wrap">
+            <select id="value-column" disabled>
+              <option value="">Add numeric data to choose a column</option>
+            </select>
+            <span class="select-chevron" aria-hidden="true">⌄</span>
+          </div>
+
+          <div id="additional-series-field">
+            <div class="field-label series-label">
+              Compare with <span id="series-help">Optional extra Y-axes</span>
+            </div>
+            <div id="series-options" class="series-options empty-series">
+              Your data columns will appear here.
+            </div>
+          </div>
+
+          <div class="summary-card">
+            <label class="summary-toggle" for="summary-toggle">
+              <span
+                ><strong>Summarize repeated values</strong
+                ><small>Group rows, like counting delivery issues</small></span
+              >
+              <span class="switch"
+                ><input id="summary-toggle" type="checkbox" /><span
+                  class="switch-track"
+                ></span
+              ></span>
+            </label>
+            <div id="summary-options" class="summary-options" hidden>
+              <label class="field-label" for="group-column"
+                >Group rows by</label
+              >
+              <div class="select-wrap">
+                <select id="group-column" disabled>
+                  <option value="">Choose a category</option>
+                </select>
+                <span class="select-chevron" aria-hidden="true">⌄</span>
+              </div>
+              <label class="field-label" for="summary-method"
+                >Summarize as</label
+              >
+              <div class="select-wrap">
+                <select id="summary-method">
+                  <option value="count">Count rows</option>
+                  <option value="sum">Sum values</option>
+                  <option value="average">Average values</option>
+                  <option value="min">Minimum value</option>
+                  <option value="max">Maximum value</option>
+                </select>
+                <span class="select-chevron" aria-hidden="true">⌄</span>
+              </div>
+              <p class="summary-hint" id="summary-hint">
+                Counts how many records belong to each group.
+              </p>
+            </div>
+          </div>
+
+          <div id="bubble-field" class="bubble-field" hidden>
+            <label class="field-label" for="size-column">Bubble size</label>
+            <div class="select-wrap">
+              <select id="size-column" disabled>
+                <option value="">Choose a size column</option>
+              </select>
+              <span class="select-chevron" aria-hidden="true">⌄</span>
+            </div>
+          </div>
+
+          <div class="chart-options">
+            <label class="toggle-row" for="show-legend">
+              <span
+                ><strong>Show legend</strong
+                ><small>Display series labels</small></span
+              >
+              <span class="switch"
+                ><input id="show-legend" type="checkbox" checked /><span
+                  class="switch-track"
+                ></span
+              ></span>
+            </label>
+            <label class="toggle-row" for="smooth-line" id="smooth-option">
+              <span
+                ><strong>Smooth line</strong
+                ><small>Soften line chart curves</small></span
+              >
+              <span class="switch"
+                ><input id="smooth-line" type="checkbox" /><span
+                  class="switch-track"
+                ></span
+              ></span>
+            </label>
+          </div>
+
+          <button class="generate-button" id="generate-chart" type="button">
+            <span>Generate chart</span><span aria-hidden="true">↗</span>
+          </button>
+          <p class="privacy-note">
+            <span aria-hidden="true">◈</span> Your data stays on your device.
+            Nothing is uploaded.
+          </p>
+        </aside>
+
+        <section class="preview-panel" aria-label="Chart preview">
+          <div class="preview-toolbar">
+            <div>
+              <span class="step-label">YOUR CANVAS</span>
+              <h2 id="preview-title">Chart preview</h2>
+            </div>
+            <div class="export-actions">
+              <button
+                class="icon-button"
+                id="copy-image"
+                type="button"
+                title="Copy chart image"
+                aria-label="Copy chart image"
+                disabled
+              >
+                <svg viewBox="0 0 20 20" aria-hidden="true">
+                  <rect x="7" y="7" width="10" height="10" rx="2"></rect>
+                  <path
+                    d="M13 7V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"
+                  ></path>
+                </svg>
+              </button>
+              <button
+                class="export-button"
+                id="download-image"
+                type="button"
+                disabled
+              >
+                <span aria-hidden="true">↓</span> Export PNG
+              </button>
+            </div>
+          </div>
+
+          <div class="chart-card">
+            <div class="chart-summary">
+              <div>
+                <span class="chart-kicker" id="chart-kicker"
+                  >READY WHEN YOU ARE</span
+                >
+                <h3 id="chart-heading">Your story starts here</h3>
+                <p id="chart-description">
+                  Add some data and your chart will appear here.
+                </p>
+              </div>
+              <span class="chart-type-badge" id="chart-badge"
+                >No chart yet</span
+              >
+            </div>
+            <div class="chart-container" id="chart-container">
+              <div class="empty-state" id="empty-state">
+                <div class="empty-art" aria-hidden="true">
+                  <div class="art-grid">
+                    <span></span><span></span><span></span><span></span
+                    ><span></span><span></span><span></span><span></span
+                    ><span></span><span></span><span></span><span></span>
+                  </div>
+                  <div class="art-baseline"></div>
+                  <div class="art-bar art-bar-one"></div>
+                  <div class="art-bar art-bar-two"></div>
+                  <div class="art-bar art-bar-three"></div>
+                  <div class="art-bar art-bar-four"></div>
+                  <div class="art-line">
+                    <i></i><i></i><i></i><i></i><i></i>
+                  </div>
+                </div>
+                <strong>A little data goes a long way.</strong>
+                <span>Paste your data on the left to get started.</span>
+              </div>
+              <canvas
+                id="chart-canvas"
+                aria-label="Generated chart"
+                role="img"
+                hidden
+              ></canvas>
+            </div>
+            <div class="chart-footer">
+              <span
+                ><span class="footer-dot"></span>
+                <span id="chart-footnote">Ready to visualize</span></span
+              >
+              <span>MADE WITH CHARTCRAFT</span>
+            </div>
+          </div>
+
+          <div class="preview-tip">
+            <span class="tip-icon" aria-hidden="true">✳</span
+            ><span
+              ><strong>Quick tip</strong> — You can paste directly from a
+              spreadsheet. Just copy the cells and paste them above.</span
+            >
+          </div>
+        </section>
+      </section>
+
+      <section class="how-it-works" id="how-it-works">
+        <span class="step-label">SIMPLE AS 1, 2, 3</span>
+        <div class="how-grid">
+          <article>
+            <span class="how-number">01</span>
+            <h3>Bring your data</h3>
+            <p>Paste from a spreadsheet or upload a CSV or JSON file.</p>
+          </article>
+          <article>
+            <span class="how-number">02</span>
+            <h3>Pick your view</h3>
+            <p>Choose a chart, select your columns, and make it yours.</p>
+          </article>
+          <article>
+            <span class="how-number">03</span>
+            <h3>Take it with you</h3>
+            <p>Copy your chart or export a crisp PNG — it’s all yours.</p>
+          </article>
+        </div>
+      </section>
+      <footer>
+        Made for curious minds. <span>✳</span> No sign-up, no fuss, just charts.
+      </footer>
+    </main>
+    <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  </body>
+</html>
